@@ -149,6 +149,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         del self.battleFrame
         del self.purchaseFrame
         del self.storePurchaseFrame
+        self.undoButton.destroy()
         self.deleteEnterButton.destroy()
         del self.deleteEnterButton
         self.deleteExitButton.destroy()
@@ -196,8 +197,9 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.battleFrame = None
         self.purchaseFrame = None
         self.storePurchaseFrame = None
+        self.undoButton = DirectButton(parent=self.invFrame, image=(self.upButton, self.downButton, self.rolloverButton, self.flatButton), text=(TTLocalizer.GagShopUndoShopping, TTLocalizer.GagShopUndoShopping, TTLocalizer.GagShopUndoShopping), text_fg=(0, 0.1, 0.7, 1), text_shadow=(0, 0, 0, 1), text_scale=0.05, text_pos=(0, -0.01), text_font=getInterfaceFont(), textMayChange=0, relief=None, pos=(-1.1, 0, -0.45), scale=1.0, command=self.__handleUNDO)
         trashcanGui = loader.loadModel('phase_3/models/gui/trashcan_gui')
-        self.deleteEnterButton = DirectButton(parent=self.invFrame, image=(trashcanGui.find('**/TrashCan_CLSD'), trashcanGui.find('**/TrashCan_OPEN'), trashcanGui.find('**/TrashCan_RLVR')), text=('', TTLocalizer.InventoryDelete, TTLocalizer.InventoryDelete), text_fg=(1, 1, 1, 1), text_shadow=(0, 0, 0, 1), text_scale=0.1, text_pos=(0, -0.1), text_font=getInterfaceFont(), textMayChange=0, relief=None, pos=(-1, 0, -0.35), scale=1.0)
+        self.deleteEnterButton = DirectButton(parent=self.invFrame, image=(trashcanGui.find('**/TrashCan_CLSD'), trashcanGui.find('**/TrashCan_OPEN'), trashcanGui.find('**/TrashCan_RLVR')), text=('', TTLocalizer.InventoryDelete, TTLocalizer.InventoryDelete), text_fg=(1, 1, 1, 1), text_shadow=(0, 0, 0, 1), text_scale=0.1, text_pos=(0, -0.1), text_font=getInterfaceFont(), textMayChange=0, relief=None, pos=(-1.1, 0, -0.34), scale=1.0)
         self.deleteExitButton = DirectButton(parent=self.invFrame, image=(trashcanGui.find('**/TrashCan_OPEN'), trashcanGui.find('**/TrashCan_CLSD'), trashcanGui.find('**/TrashCan_RLVR')), text=('', TTLocalizer.InventoryDone, TTLocalizer.InventoryDone), text_fg=(1, 1, 1, 1), text_shadow=(0, 0, 0, 1), text_scale=0.1, text_pos=(0, -0.1), text_font=getInterfaceFont(), textMayChange=0, relief=None, pos=(-1, 0, -0.35), scale=1.0)
         trashcanGui.removeNode()
         self.deleteHelpText = DirectLabel(parent=self.invFrame, relief=None, pos=(0.272, 0.3, -0.907), text=TTLocalizer.InventoryDeleteHelp, text_fg=(0, 0, 0, 1), text_scale=0.08, textMayChange=0)
@@ -214,6 +216,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.trackNameLabels = []
         self.trackBars = []
         self.buttons = []
+        self._undoArray = []
         for track in xrange(0, len(Tracks)):
             trackFrame = DirectFrame(parent=self.invFrame, image=self.rowModel, scale=(1.0, 1.0, 1.1), pos=(0, 0.3, self.TrackYOffset + track * self.TrackYSpacing), image_color=(TrackColors[track][0],
              TrackColors[track][1],
@@ -248,18 +251,33 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
 
     def __handleSelection(self, track, level):
         if self.activateMode == 'purchaseDelete' or self.activateMode == 'bookDelete' or self.activateMode == 'storePurchaseDelete':
-            if self.numItem(track, level):
-                self.useItem(track, level)
-                self.updateGUI(track, level)
-                messenger.send('inventory-deletion', [track, level])
-                self.showDetail(track, level)
+            self.__handleDelete(track, level)
         elif self.activateMode == 'purchase' or self.activateMode == 'storePurchase':
             messenger.send('inventory-selection', [track, level])
+            self._undoArray.append([track, level])
             self.showDetail(track, level)
         elif self.gagTutMode:
             pass
         else:
             messenger.send('inventory-selection', [track, level])
+
+    def __handleDelete(self, track, level):
+        if self.numItem(track, level):
+            self.useItem(track, level)
+            self.updateGUI(track, level)
+            messenger.send('inventory-deletion', [track, level])
+            self.showDetail(track, level)
+
+    def __handleUNDO(self):
+        if (len(self._undoArray) == 0):
+            # say something on user interface about there being nothing to undo
+            return
+        lastItem = self._undoArray.pop()
+        track = lastItem[0]
+        level = lastItem[1]
+        self.__handleDelete(track, level)
+        self.toon.setMoney(self.toon.getMoney() + 1)
+        pass
 
     def __handleRun(self):
         messenger.send('inventory-run')
@@ -445,6 +463,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.setScale(1.0)
         self.detailFrame.setPos(0.1, 0, -0.855)
         self.detailFrame.setScale(0.75)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteEnterButton.setPos(1.029, 0, -0.639)
         self.deleteEnterButton.setScale(0.75)
@@ -480,6 +499,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         messenger.send('enterBookDelete')
         self.setPos(-0.2, 0, 0.4)
         self.setScale(0.8)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteEnterButton.setPos(1.029, 0, -0.639)
         self.deleteEnterButton.setScale(0.75)
@@ -526,6 +546,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(0.81)
         self.detailFrame.setPos(1.17, 0, -0.02)
         self.detailFrame.setScale(1.25)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteEnterButton.setPos(-0.441, 0, -0.917)
         self.deleteEnterButton.setScale(0.75)
@@ -586,6 +607,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(0.81)
         self.detailFrame.setPos(1.175, 0, 0)
         self.detailFrame.setScale(1.25)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteEnterButton.setPos(-0.55, 0, -0.91)
         self.deleteEnterButton.setScale(0.75)
@@ -630,6 +652,9 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(0.81)
         self.detailFrame.setPos(1.175, 0, 0)
         self.detailFrame.setScale(1.25)
+        self.undoButton.show()
+        self.undoButton.setPos(-0.35, 0, -0.91)
+        self.undoButton.setScale(0.75)
         self.deleteEnterButton.show()
         self.deleteEnterButton.setPos(-0.55, 0, -0.91)
         self.deleteEnterButton.setScale(0.75)
@@ -660,6 +685,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.reparentTo(aspect2d)
         self.setPos(0, 0, 0)
         self.setScale(1)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteExitButton.show()
         self.deleteExitButton['command'] = self.setActivateMode
@@ -701,6 +727,9 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.detailFrame.setScale(1.25)
         totalProps = self.totalProps
         maxProps = self.toon.getMaxCarry()
+        self.undoButton.show()
+        self.undoButton.setPos(-0.241, 0, -0.927)
+        self.undoButton.setScale(0.75)
         self.deleteEnterButton.show()
         self.deleteEnterButton.setPos(-0.441, 0, -0.917)
         self.deleteEnterButton.setScale(0.75)
@@ -709,6 +738,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.deleteExitButton.setScale(0.75)
         if self.gagTutMode:
             self.deleteEnterButton.hide()
+            self.undoButton.hide()
         self.deleteEnterButton['command'] = self.setActivateMode
         self.deleteEnterButton['extraArgs'] = ['purchaseDelete']
         for track in xrange(len(Tracks)):
@@ -756,6 +786,9 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.detailFrame.setScale(1.25)
         totalProps = self.totalProps
         maxProps = self.toon.getMaxCarry()
+        self.undoButton.show()
+        self.undoButton.setPos(-0.75, 0, -0.91)
+        self.undoButton.setScale(0.75)
         self.deleteEnterButton.show()
         self.deleteEnterButton.setPos(-0.55, 0, -0.91)
         self.deleteEnterButton.setScale(0.75)
@@ -807,6 +840,9 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(0.81)
         self.detailFrame.setPos(1.17, 0, -0.02)
         self.detailFrame.setScale(1.25)
+        self.undoButton.show()
+        self.undoButton.setPos(-0.241, 0, -0.927)
+        self.undoButton.setScale(0.75)
         self.deleteEnterButton.show()
         self.deleteEnterButton.setPos(-0.441, 0, -0.917)
         self.deleteEnterButton.setScale(0.75)
@@ -815,6 +851,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.deleteExitButton.setScale(0.75)
         if self.gagTutMode:
             self.deleteEnterButton.hide()
+            self.undoButton.hide()
         for track in xrange(len(Tracks)):
             if self.toon.hasTrackAccess(track):
                 self.showTrack(track)
@@ -855,6 +892,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.deleteExitButton.setPos(-0.441, 0, -0.917)
         self.deleteExitButton.setScale(0.75)
         self.deleteEnterButton.hide()
+        self.undoButton.hide()
         for track in xrange(len(Tracks)):
             if self.toon.hasTrackAccess(track):
                 self.showTrack(track)
@@ -889,6 +927,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(1)
         self.detailFrame.setPos(1.125, 0, -0.08)
         self.detailFrame.setScale(1)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteExitButton.hide()
         if self.bldg == 1:
@@ -954,6 +993,7 @@ class InventoryNew(InventoryBase.InventoryBase, DirectFrame):
         self.invFrame.setScale(1)
         self.detailFrame.setPos(1.125, 0, -0.08)
         self.detailFrame.setScale(1)
+        self.undoButton.hide()
         self.deleteEnterButton.hide()
         self.deleteExitButton.hide()
         self.runButton.hide()

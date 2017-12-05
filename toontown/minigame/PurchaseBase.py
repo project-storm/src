@@ -51,6 +51,9 @@ class PurchaseBase(StateData.StateData):
         del self.fsm
         return
 
+    def __handleDeletion(self, track, level):
+        messenger.send('boughtGag')
+
     def __handleSelection(self, track, level):
         if gagIsPaidOnly(track, level):
             if not base.cr.isPaid():
@@ -132,6 +135,7 @@ class PurchaseBase(StateData.StateData):
         self.checkForBroke()
         self.acceptOnce('purchaseOver', self.handleDone)
         self.accept('inventory-selection', self.__handleSelection)
+        self.accept('inventory-deletion', self.__handleDeletion)
         self.accept(self.toon.uniqueName('moneyChange'), self.__moneyChange)
 
     def exitPurchase(self):
