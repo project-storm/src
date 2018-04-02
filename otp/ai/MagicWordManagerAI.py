@@ -3,6 +3,7 @@ from direct.distributed.DistributedObjectAI import DistributedObjectAI
 from otp.ai.MagicWordGlobal import *
 from direct.distributed.PyDatagram import PyDatagram
 from direct.distributed.MsgTypes import *
+from toontown.toon.DistributedToonAI import DistributedToonAI
 
 class MagicWordManagerAI(DistributedObjectAI):
     notify = DirectNotifyGlobal.directNotify.newCategory("MagicWordManagerAI")
@@ -11,10 +12,10 @@ class MagicWordManagerAI(DistributedObjectAI):
         invokerId = self.air.getAvatarIdFromSender()
         invoker = self.air.doId2do.get(invokerId)
 
-        if not 'DistributedToonAI' in str(self.air.doId2do.get(targetId)):
+        if not isinstance(self.air.doId2do.get(targetId), DistributedToonAI):
             self.sendUpdateToAvatarId(invokerId, 'sendMagicWordResponse', ['Target is not a toon object!'])
             return
-            
+
         if not invoker:
             self.sendUpdateToAvatarId(invokerId, 'sendMagicWordResponse', ['missing invoker'])
             return
@@ -44,7 +45,7 @@ class MagicWordManagerAI(DistributedObjectAI):
 
 @magicWord(category=CATEGORY_COMMUNITY_MANAGER, types=[str])
 def help(wordName=None):
-    print 'help called with %s' % (wordName)    
+    print 'help called with %s' % (wordName)
     if not wordName:
         return "What were you interested getting help for?"
     word = spellbook.words.get(wordName.lower())   # look it up by its lower case value
@@ -57,7 +58,7 @@ def help(wordName=None):
                     return 'Did you mean %s' % (spellbook.words.get(key).name)
         return 'I have no clue what %s is refering to' % (wordName)
     return word.doc
-            
+
 @magicWord(category=CATEGORY_COMMUNITY_MANAGER, types=[])
 def words():
     accessLevel = spellbook.getInvoker().getAdminAccess()
@@ -74,4 +75,3 @@ def words():
         return "You are chopped liver"
     else:
         return wordString
-            
