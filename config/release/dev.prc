@@ -33,7 +33,7 @@ want-resistance-toonup #t
 want-resistance-restock #t
 
 # Optional:
-want-yin-yang #t
+want-yin-yang #f
 
 # Developer options:
 show-population #t
