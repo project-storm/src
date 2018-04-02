@@ -57,6 +57,10 @@ egg-object-type-camera-barrier-sphere <Scalar> collide-mask { 0x05 } <Collide> {
 egg-object-type-model <Model> { 1 }
 egg-object-type-dcs <DCS> { 1 }
 
+# Antialiasing:
+framebuffer-multisample #t
+multisamples 2
+
 # Safe zones:
 want-safe-zones #t
 want-toontown-central #t
