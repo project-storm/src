@@ -79,9 +79,9 @@ class IssueFrameV2(IssueFrame.IssueFrame):
         self.notify.debug('Doing nothing for loadNavButtons')
         if section == 0 and subsection == 0:
             self.loadNavButtons(pageFrame)
-            self.parentOfWeekNav = DirectFrame(frameColor=(1, 1, 1, 0), relief=DGG.FLAT, parent=pageFrame)
-            self.loadWeekNavButtons(self.parentOfWeekNav)
-            self.parentOfWeekNav.setPos(-1.94, 0, 0)
+            self._parentOfWeekNav = DirectFrame(frameColor=(1, 1, 1, 0), relief=DGG.FLAT, parent=pageFrame)
+            self.loadWeekNavButtons(self._parentOfWeekNav)
+            self._parentOfWeekNav.setPos(-1.94, 0, 0)
 
     def loadNavButtons(self, pageFrame):
         identToButtonNames = {'hom': 'tt_i_art_btn_NavHom2',

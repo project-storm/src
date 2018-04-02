@@ -59,7 +59,6 @@ class AIBase:
         __builtins__['vfs'] = vfs
         __builtins__['hidden'] = self.hidden
         AIBase.notify.info('__dev__ == %s' % __dev__)
-        PythonUtil.recordFunctorCreationStacks()
         __builtins__['wantTestObject'] = self.config.GetBool('want-test-object', 0)
         self.wantStats = self.config.GetBool('want-pstats', 0)
         Task.TaskManager.pStatsTasks = self.config.GetBool('pstats-tasks', 0)

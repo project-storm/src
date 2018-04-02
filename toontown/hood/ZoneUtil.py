@@ -1,5 +1,5 @@
 from toontown.toonbase.ToontownGlobals import *
-
+from direct.directnotify.DirectNotifyGlobal import directNotify
 
 zoneUtilNotify = directNotify.newCategory('ZoneUtil')
 tutorialDict = None
@@ -104,7 +104,7 @@ def getWhereName(zoneId, isToon):
                 if getHoodId(zoneId) == SellbotHQ:
                     if suffix == 600:
                         where = 'brutalFactoryInterior'
-                    else:    
+                    else:
                         where = 'factoryInterior'
                 elif getHoodId(zoneId) == CashbotHQ:
                     where = 'mintInterior'

@@ -1,16 +1,13 @@
 from pandac.PandaModules import *
 from direct.gui.DirectGui import *
+from direct.gui.DirectGuiGlobals import NO_FADE_SORT_INDEX
 from toontown.toonbase import ToontownGlobals
 from toontown.toonbase import TTLocalizer
 from toontown.hood import ZoneUtil
 import random
 
 
-LOADING_SCREEN_SORT_INDEX = 4000
-
-
 class ToontownLoadingScreen:
-
     defaultTex = 'phase_3.5/maps/loading/default.jpg'
     zone2picture = {
         ToontownGlobals.GoofySpeedway : 'phase_3.5/maps/loading/gs.jpg',
@@ -42,8 +39,7 @@ class ToontownLoadingScreen:
         ToontownGlobals.SellbotHQ : 'phase_3.5/maps/loading/sbhq.jpg',
         ToontownGlobals.CashbotHQ : 'phase_3.5/maps/loading/cbhq.jpg',
         ToontownGlobals.LawbotHQ : 'phase_3.5/maps/loading/lbhq.jpg',
-        ToontownGlobals.BossbotHQ : 'phase_3.5/maps/loading/bbhq.jpg'
-    }
+        ToontownGlobals.BossbotHQ : 'phase_3.5/maps/loading/bbhq.jpg'}
 
     def __init__(self):
         self.__expectedCount = 0
@@ -59,16 +55,12 @@ class ToontownLoadingScreen:
         self.logo.reparentTo(hidden)
         self.logo.setTransparency(TransparencyAttrib.MAlpha)
         scale = self.logo.getScale()
-        # self.logo.setPos(scale[0], 0, -scale[2])
         self.logo.setPos(0, 0, -scale[2])
-        self.toon = None
 
     def destroy(self):
         self.tip.destroy()
         self.title.destroy()
         self.gui.removeNode()
-        if self.toon:
-            self.toon.delete()
         self.logo.removeNode()
 
     def getTip(self, tipCategory):
@@ -82,49 +74,22 @@ class ToontownLoadingScreen:
         self.__count = 0
         self.__expectedCount = range
         if gui:
-            if base.localAvatarStyle:
-                from toontown.toon import Toon
-                bored = {'emote':'bored', 'frame':135} #must define before list
-                run = {'emote':'run', 'frame':7}
-                victory = {'emote':'victory', 'frame':10}
-                applause = {'emote':'applause', 'frame':23}
-                dust = {'emote':'sprinkle-dust', 'frame':40}
-                hypno = {'emote':'hypnotize', 'frame':25}
-                cringe = {'emote':'cringe', 'frame':25}
-                wave = {'emote':'wave', 'frame':25}
-                shrug = {'emote':'shrug', 'frame':30}
-                duck = {'emote':'duck', 'frame':40}
-                up = {'emote':'up', 'frame':60}
-                pushup = {'emote':'down', 'frame':23}
-                bow = {'emote':'bow', 'frame':45}
-                emotelist = [bored, run, victory, applause, dust,
-                             hypno, cringe, wave, shrug, duck,
-                             up, pushup, bow]
-                emotechosen = random.choice(emotelist)
-                self.toon = Toon.Toon()
-                self.toon.setDNA(base.localAvatarStyle)
-                self.toon.pose(emotechosen['emote'], emotechosen['frame'])
-                self.toon.getGeomNode().setDepthWrite(1)
-                self.toon.getGeomNode().setDepthTest(1)
-                self.toon.setHpr(205, 0, 0)
-                self.toon.setScale(0.18)
-                self.toon.setPos(base.a2dBottomRight.getX()/1.25, 0, -0.034)
-                self.toon.reparentTo(self.waitBar)
-                self.waitBar['frameSize'] = (base.a2dLeft+(base.a2dRight/8.15), base.a2dRight-(base.a2dRight/2.57), -0.03, 0.03)
-            self.title.reparentTo(base.a2dpBottomLeft, LOADING_SCREEN_SORT_INDEX)
+            self.waitBar['frameSize'] = (base.a2dLeft+(base.a2dRight/8.15), base.a2dRight-(base.a2dRight/2.57), -0.03, 0.03)
+            self.title.reparentTo(base.a2dpBottomLeft, NO_FADE_SORT_INDEX)
             self.title.setPos(0.24, 0, 0.23)
             self.tip['text'] = self.getTip(tipCategory)
             self.gui.setPos(0, -0.1, 0)
-            self.gui.reparentTo(aspect2d, LOADING_SCREEN_SORT_INDEX)
+            self.gui.reparentTo(aspect2d, NO_FADE_SORT_INDEX)
             self.gui.setTexture(self.background, 1)
             if loadingScreenTex == self.defaultTex:
-                self.logo.reparentTo(base.a2dpTopCenter, LOADING_SCREEN_SORT_INDEX)
+                self.logo.reparentTo(base.a2dpTopCenter, NO_FADE_SORT_INDEX)
         else:
-            self.title.reparentTo(base.a2dpBottomLeft, LOADING_SCREEN_SORT_INDEX)
+            self.title.reparentTo(base.a2dpBottomLeft, NO_FADE_SORT_INDEX)
             self.gui.reparentTo(hidden)
             self.logo.reparentTo(hidden)
-        self.tip.reparentTo(base.a2dpBottomCenter, LOADING_SCREEN_SORT_INDEX)
-        self.waitBar.reparentTo(base.a2dpBottomCenter, LOADING_SCREEN_SORT_INDEX)
+
+        self.tip.reparentTo(base.a2dpBottomCenter, NO_FADE_SORT_INDEX)
+        self.waitBar.reparentTo(base.a2dpBottomCenter, NO_FADE_SORT_INDEX)
         self.waitBar.update(self.__count)
 
     def end(self):
@@ -133,8 +98,6 @@ class ToontownLoadingScreen:
         self.title.reparentTo(self.gui)
         self.tip.reparentTo(self.gui)
         self.gui.reparentTo(hidden)
-        if self.toon:
-            self.toon.reparentTo(hidden)
         self.logo.reparentTo(hidden)
         return (self.__expectedCount, self.__count)
 

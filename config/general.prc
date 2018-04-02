@@ -1,11 +1,11 @@
 # Window settings:
-window-title Toontown Fellowship
+window-title Toontown: Project Storm
 win-origin -1 -1
 icon-filename phase_3/etc/icon.ico
 cursor-filename phase_3/etc/toonmono.cur
 
 # Audio:
-audio-library-name p3fmod_audio
+audio-library-name p3openal_audio
 
 # Graphics:
 aux-display pandagl

@@ -1,24 +1,29 @@
-from direct.fsm.FSM import FSM
+from direct.fsm.State import State
+from direct.fsm.ClassicFSM import ClassicFSM
 from direct.showbase.DirectObject import DirectObject
 from panda3d.core import PandaNode, PGButton, NodePath, MouseWatcherRegion
 
 
-class Clickable(FSM, PandaNode, DirectObject):
+class Clickable(PandaNode, DirectObject):
+
     def __init__(self, name):
-        FSM.__init__(self, name)
         PandaNode.__init__(self, name)
         DirectObject.__init__(self)
 
-        self.active = True
+        self.fsm = ClassicFSM(name, [
+            State('off', self.enterOff, self.exitOff),
+            State('ready', self.enterReady, self.exitReady),
+            State('depressed', self.enterDepressed, self.exitDepressed),
+            State('rollover', self.enterRollover, self.exitRollover),
+            State('inactive', self.enterInactive, self.exitInactive)], 'off', 'off')
+        self.fsm.enterInitialState()
 
+        self.active = True
         self.lastClickState = PGButton.SReady
         self.clickState = PGButton.SReady
-
         self.__hovering = False
-
         self.clickEvent = ''
         self.clickExtraArgs = []
-
         self.contents = NodePath.anyPath(self).attachNewNode('contents')
 
         # Create a MouseWatcherRegion:
@@ -48,7 +53,7 @@ class Clickable(FSM, PandaNode, DirectObject):
             self.contents = None
 
     def getUniqueName(self):
-        return 'Clickable-' + str(id(self))
+        return 'Clickable-%s' % id(self)
 
     def setActive(self, active):
         self.active = active
@@ -67,18 +72,27 @@ class Clickable(FSM, PandaNode, DirectObject):
         self.clickState = clickState
 
         if self.clickState == PGButton.SReady:
-            self.request('Ready')
+            self.fsm.request('ready')
         elif self.clickState == PGButton.SDepressed:
-            self.request('Depressed')
+            self.fsm.request('depressed')
         elif self.clickState == PGButton.SRollover:
-            self.request('Rollover')
+            self.fsm.request('rollover')
         elif self.clickState == PGButton.SInactive:
-            self.request('Inactive')
+            self.fsm.request('inactive')
 
     def getClickState(self):
         return self.clickState
 
+    def enterOff(self):
+        pass
+
+    def exitOff(self):
+        pass
+
     def enterReady(self):
+        pass
+
+    def exitReady(self):
         pass
 
     def enterDepressed(self):
@@ -91,7 +105,13 @@ class Clickable(FSM, PandaNode, DirectObject):
     def enterRollover(self):
         pass
 
+    def exitRollover(self):
+        pass
+
     def enterInactive(self):
+        pass
+
+    def exitInactive(self):
         pass
 
     def setClickEvent(self, event, extraArgs=[]):
@@ -111,10 +131,12 @@ class Clickable(FSM, PandaNode, DirectObject):
             self.setClickState(PGButton.SReady)
 
     def __handleMouseDown(self, region, button):
-        self.setClickState(PGButton.SDepressed)
+        if button == 'mouse1':
+            self.setClickState(PGButton.SDepressed)
 
     def __handleMouseUp(self, region, button):
-        if self.__hovering:
-            self.setClickState(PGButton.SRollover)
-        else:
-            self.setClickState(PGButton.SReady)
+        if button == 'mouse1':
+            if self.__hovering:
+                self.setClickState(PGButton.SRollover)
+            else:
+                self.setClickState(PGButton.SReady)

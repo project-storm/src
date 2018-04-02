@@ -1,4 +1,0 @@
-start start_astron_cluster
-start start_uberdog_server_no_input
-sleep 1
-start start_ai_server_no_input
